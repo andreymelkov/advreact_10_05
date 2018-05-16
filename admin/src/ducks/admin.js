@@ -6,11 +6,10 @@ import { createSelector } from 'reselect'
 /**
  * Constants
  * */
-export const moduleName = 'auth'
+export const moduleName = 'admin'
 const prefix = `${appName}/${moduleName}`
 
-export const SIGN_IN_SUCCESS = `${prefix}/SIGN_IN_SUCCESS`
-export const SIGN_UP_SUCCESS = `${prefix}/SIGN_UP_SUCCESS`
+export const NEW_USER_SUCCESS = `${prefix}/NEW_USER_SUCCESS`
 
 /**
  * Reducer
@@ -23,8 +22,7 @@ export default function reducer(state = new ReducerRecord(), action) {
     const {type, payload} = action
 
     switch (type) {
-        case SIGN_IN_SUCCESS:
-        case SIGN_UP_SUCCESS:
+        case NEW_USER_SUCCESS:
             return state.set('user', payload.user)
 
         default:
@@ -42,23 +40,27 @@ export const authorizedSelector = createSelector(userSelector, user => !!user)
  * Action Creators
  * */
 
-export function signUp(email, password) {
+export function newUser(email, firstName, lastName) {
     return (dispatch) => {
-        firebase.auth().createUserWithEmailAndPassword(email, password)
-            .then(user => dispatch({ type: SIGN_UP_SUCCESS, payload: { user } }))
+        newUser(email, firstName, lastName).then(
+            user => dispatch({ type: NEW_USER_SUCCESS, payload: { user } })
+        );
+        // firebase.auth().createUser({ email: email, displayName: displayName })
+        //     .then(user => dispatch({ type: NEW_USER_SUCCESS, payload: { user } }))
     }
 }
 
-export function signIn(email, password) {
-    return (dispatch) => {
-        firebase.auth().signInWithEmailAndPassword(email, password)
-            .then(user => dispatch({ type: SIGN_IN_SUCCESS, payload: { user } }))
+async function newUser(email, firstName, lastName){
+    let displayName = firstName + ' ' + lastName;
+    return {
+        email: email,
+        displayName: displayName
     }
 }
 
 firebase.auth().onAuthStateChanged(user => {
     user && window.store.dispatch({
-        type: SIGN_IN_SUCCESS,
+        type: NEW_USER_SUCCESS,
         payload: { user }
     })
 })
